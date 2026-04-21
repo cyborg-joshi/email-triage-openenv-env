@@ -1,0 +1,137 @@
+name: ai-executive-assistant-env
+
+description: >
+  An OpenEnv environment for training AI agents to handle realistic
+  personal and professional email scenarios with dynamic world state
+  and schema drift. The agent receives emails, calendar conflicts,
+  and pending tasks, then must choose the correct action and write
+  an appropriate reply across two steps. Priority rules drift every
+  10 episodes (Corporate → Startup → Executive mode), forcing the
+  agent to detect and adapt to silently changing policies.
+
+version: "2.0.0"
+author: kanishk22
+theme: "3.2 - World Modeling (Personal Tasks) + Patronus AI Schema Drift"
+
+observation_space:
+  type: structured_text
+  description: >
+    World state containing emails, calendar events, pending tasks,
+    current schema version and name, and situational context.
+
+action_space:
+  type: multi_step
+  steps: 2
+  step_1:
+    type: discrete
+    actions:
+      - reply
+      - escalate
+      - delegate
+      - reschedule
+      - ignore
+  step_2:
+    type: free_text
+    description: >
+      Reply text written by the agent. Must respect the tone and
+      word limit defined by the current active schema.
+
+endpoints:
+  health:  /
+  reset:   /reset
+  step:    /step
+  state:   /state
+  schema:  /schema
+
+tasks:
+
+  - id: conflict_work
+    description: >
+      Production emergency conflicts with a personal commitment.
+      Tests urgency detection and conflict acknowledgment.
+    steps: 2
+    schema_sensitive: true
+
+  - id: conflict_calendar
+    description: >
+      Two important appointments at the exact same time.
+      Tests negotiation and rescheduling behavior.
+    steps: 2
+    schema_sensitive: true
+
+  - id: boss_pressure
+    description: >
+      Tough boss email demanding an overdue report.
+      Tests tone management and composure under pressure.
+    steps: 2
+    schema_sensitive: true
+
+  - id: personal_event
+    description: >
+      Friend's wedding conflicts with a pre-booked flight.
+      Tests warmth, empathy, and conflict handling.
+    steps: 2
+    schema_sensitive: false
+
+  - id: spam_disguised
+    description: >
+      Phishing email disguised as urgent account action.
+      Tests spam detection under urgency framing.
+    steps: 2
+    schema_sensitive: true
+
+  - id: legal_compliance
+    description: >
+      Legal team compliance request with strict deadline.
+      Tests escalation and compliance awareness.
+    steps: 2
+    schema_sensitive: true
+
+  - id: personal_family
+    description: >
+      Family emergency requiring emotional intelligence.
+      Tests warmth, personal tone, and conflict acknowledgment.
+    steps: 2
+    schema_sensitive: false
+
+  - id: client_urgent
+    description: >
+      Angry enterprise client threatening CEO escalation.
+      Tests client priority and multi-step conflict handling.
+    steps: 2
+    schema_sensitive: true
+
+  - id: finance_pressure
+    description: >
+      Overdue invoice requiring delegation to finance team.
+      Tests correct routing and delegation behavior.
+    steps: 2
+    schema_sensitive: false
+
+  - id: drift_detection
+    description: >
+      Same email whose ideal action changes across all three schemas.
+      Ultimate test of schema drift adaptation.
+    steps: 2
+    schema_sensitive: true
+
+scoring:
+  reward_range: [0.01, 0.99]
+  success_threshold: 0.60
+  score_formula: mean(episode_rewards)
+  components:
+    action_correctness: 0.40
+    reply_quality: 0.40
+    conflict_awareness: 0.20
+
+schema_drift:
+  enabled: true
+  schedule:
+    v1: "episodes 1-10  (Corporate Mode) — production alerts top priority"
+    v2: "episodes 11-20 (Startup Mode)   — clients top priority"
+    v3: "episodes 21+   (Executive Mode) — legal and revenue top priority"
+
+constraints:
+  max_runtime_seconds: 1800
+  max_memory_gb: 8
+  max_vcpu: 2
