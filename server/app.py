@@ -54,6 +54,13 @@ def state():
     return env.state()
 
 
+@app.post("/admin/reset_env")
+def admin_reset_env():
+    env.episode_count = 0
+    env.current_schema_key = "v1"
+    return {"status": "ok", "message": "Environment reset to episode 0 (v1 Corporate)"}
+
+
 @app.get("/schema")
 def schema():
     return {
