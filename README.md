@@ -1,3 +1,12 @@
+---
+title: AI Executive Assistant Environment
+emoji: 📬
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+---
+
 # AI Personal Executive Assistant — OpenEnv Environment
 
 An OpenEnv-compatible reinforcement learning environment that trains AI agents
