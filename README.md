@@ -20,6 +20,50 @@ rules change silently, forcing the agent to detect and adapt.
 
 ---
 
+## Materials
+
+| Resource | Link |
+|----------|------|
+| Live Environment | https://huggingface.co/spaces/kanishk22/email-triage-openenv-env |
+| Interactive API Docs | https://kanishk22-email-triage-openenv-env.hf.space/docs |
+| Colab Training Notebook | *[link — add after publishing]* |
+| Mini-blog / Video | *[link — add after publishing]* |
+| GitHub | https://github.com/cyborg-joshi/email-triage-openenv-env |
+
+---
+
+## Results
+
+### Base Model (Llama-3.3-70B, No Fine-Tuning)
+
+30 episodes across all 3 schema phases, evaluated on the live environment:
+
+| Schema Phase | Episodes | Avg Reward |
+|-------------|----------|-----------|
+| v1 Corporate | 1–10 | 0.41 |
+| v2 Startup | 11–20 | 0.58 |
+| v3 Executive | 21–30 | 0.50 |
+| **Overall** | 30 | **0.496** |
+
+### After GRPO Fine-Tuning (Unsloth + TRL, T4 GPU)
+
+| Schema Phase | Base | Fine-Tuned | Improvement |
+|-------------|------|-----------|-------------|
+| v1 Corporate | 0.41 | *TBD* | *TBD* |
+| v2 Startup | 0.58 | *TBD* | *TBD* |
+| v3 Executive | 0.50 | *TBD* | *TBD* |
+| **Overall** | **0.496** | *TBD* | *TBD* |
+
+*Fine-tuning results updated at hackathon Grand Finale, April 25–26 2026.*
+
+### Reward Curves
+
+![Before/After Fine-Tuning](before_after_finetuning.png)
+
+*Left: Episode-by-episode rewards across 3 schema phases. Right: Average reward per schema phase, base vs fine-tuned.*
+
+---
+
 ## What Makes This Environment Unique
 
 ### Schema Drift
@@ -63,7 +107,7 @@ Total Reward = action_correctness (40%)
              + conflict_awareness (20%)
 ```
 
-- **Action correctness:** Did the agent pick the right action for the current schema?
+- **Action correctness:** Did the agent pick the right action for the current schema? Partial credit for close actions.
 - **Reply quality:** Keyword coverage + tone compliance + length within schema limit
 - **Conflict awareness:** Did the reply acknowledge any scheduling conflict?
 
@@ -85,6 +129,19 @@ All rewards clamped to `[0.01, 0.99]`.
 | `client_urgent` | Enterprise client threatening CEO escalation | Yes |
 | `finance_pressure` | Overdue invoice needing delegation | No |
 | `drift_detection` | Ideal action changes across all schemas | Yes |
+
+---
+
+## Training Pipeline
+
+Fine-tuning uses **GRPO (Group Relative Policy Optimization)** from HuggingFace TRL + Unsloth:
+
+- Base model: `unsloth/Llama-3.2-3B-Instruct` (4-bit quantized via LoRA)
+- The environment's reward function IS the training signal — no human labels, no reward model
+- Training loop connects directly to the live HuggingFace Space via HTTP
+- 50 training episodes, 3 epochs, LoRA on q_proj + v_proj
+
+See the [Colab training notebook](*link*) to reproduce.
 
 ---
 
@@ -128,8 +185,9 @@ email-triage-openenv/
 │   ├── models.py        — WorldState, ExecutiveAction, ExecutiveObservation
 │   └── scenarios.py     — All 10 email scenarios + 3 schema definitions
 ├── server/
-│   ├── app.py           — FastAPI server (5 endpoints)
+│   ├── app.py           — FastAPI server (endpoints + admin reset)
 │   └── graders.py       — Macro-graders (trajectory + per-schema scoring)
+├── before_after_finetuning.png  — Reward curves (base vs fine-tuned)
 ├── inference.py         — Agent script (calls environment via HTTP)
 ├── openenv.yaml         — OpenEnv manifest
 ├── Dockerfile           — Container config for HuggingFace Spaces
@@ -146,13 +204,6 @@ uvicorn server.app:app --host 0.0.0.0 --port 8000
 # Open http://localhost:8000/docs to test all endpoints
 ```
 
-## Running the Agent
-
-```bash
-export HF_TOKEN=hf_your_token_here
-python inference.py
-```
-
 ---
 
 ## Built With
@@ -160,13 +211,10 @@ python inference.py
 - [OpenEnv](https://github.com/huggingface/openenv) — RL environment framework
 - [FastAPI](https://fastapi.tiangolo.com) — API server
 - [Pydantic](https://docs.pydantic.dev) — Data validation
+- [TRL](https://github.com/huggingface/trl) + [Unsloth](https://github.com/unslothai/unsloth) — Fine-tuning
 - [Llama-3.3-70B](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) — Agent LLM
 - [HuggingFace Spaces](https://huggingface.co/spaces) — Deployment
 
 ---
 
-## Live Environment
-
-**Space:** https://huggingface.co/spaces/kanishk22/email-triage-openenv-env
-
-**Author:** kanishk22 | Meta PyTorch OpenEnv × Scaler Hackathon 2026
+**Author:** kanishk22 | Meta PyTorch OpenEnv × Scaler Hackathon Grand Finale 2026
