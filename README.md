@@ -26,7 +26,7 @@ rules change silently, forcing the agent to detect and adapt.
 |----------|------|
 | Live Environment | https://huggingface.co/spaces/kanishk22/email-triage-openenv-env |
 | Interactive API Docs | https://kanishk22-email-triage-openenv-env.hf.space/docs |
-| Colab Training Notebook | *[link — add after publishing]* |
+| Colab Training Notebook | https://colab.research.google.com/drive/1vHuqDneawjBNN3BanodcvuClMceLRigc?usp=sharing |
 | Demo Video | https://youtu.be/LIMTsik57YQ |
 | GitHub | https://github.com/cyborg-joshi/email-triage-openenv-env |
 
