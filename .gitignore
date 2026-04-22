@@ -9,4 +9,3 @@ dist/
 build/
 uv.lock
 .pytest_cache/
-Before_after_finetuning.png
