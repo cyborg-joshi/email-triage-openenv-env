@@ -58,7 +58,7 @@ rules change silently, forcing the agent to detect and adapt.
 
 ### Reward Curves
 
-![Before/After Fine-Tuning](before_after_finetuning.png)
+![Before/After Fine-Tuning](https://raw.githubusercontent.com/cyborg-joshi/email-triage-openenv-env/main/Before_after_finetuning.png)
 
 *Left: Episode-by-episode rewards across 3 schema phases. Right: Average reward per schema phase, base vs fine-tuned.*
 
