@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from env.environment import ExecutiveAssistantEnv
 from env.models import ExecutiveAction
+from env.graders import named_rubrics
 from env.scenarios import SCHEMAS
 
 app = FastAPI(
@@ -24,9 +25,9 @@ def health():
 
 @app.post("/reset")
 def reset(task: str = None):
-    obs = env.reset(task)
+    obs = env.reset(task=task)
     return {
-        "observation": obs.dict(),
+        "observation": obs.model_dump(),
         "reward": 0.0,
         "done": False,
         "info": {
@@ -42,7 +43,7 @@ def step(action: ExecutiveAction):
     obs, reward, done, info = env.step(action)
     reward = min(max(float(reward), 0.01), 0.99) if done else 0.0
     return {
-        "observation": obs.dict(),
+        "observation": obs.model_dump(),
         "reward": reward,
         "done": done,
         "info": info
@@ -51,7 +52,15 @@ def step(action: ExecutiveAction):
 
 @app.get("/state")
 def state():
-    return env.state()
+    return env.state.model_dump()
+
+
+@app.get("/rubrics")
+def rubrics():
+    return {
+        name: {"weight": rubric.weight, "last_score": rubric.last_score}
+        for name, rubric in named_rubrics()
+    }
 
 
 @app.post("/admin/reset_env")

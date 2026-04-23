@@ -1,10 +1,11 @@
 import random
-from env.models import ExecutiveObservation, ExecutiveAction
+from openenv.core import Environment
+from env.models import ExecutiveObservation, ExecutiveAction, ExecutiveState
 from env.graders import compute_reward
 from env.scenarios import SCENARIOS, SCHEMAS
 
 
-class ExecutiveAssistantEnv:
+class ExecutiveAssistantEnv(Environment[ExecutiveAction, ExecutiveObservation, ExecutiveState]):
 
     def __init__(self):
         self.episode_count = 0
@@ -23,7 +24,8 @@ class ExecutiveAssistantEnv:
         else:
             return "v3"
 
-    def reset(self, task: str = None):
+    def reset(self, seed=None, episode_id=None, **kwargs):  # noqa: ARG002
+        task = kwargs.get("task", None)
         self.episode_count += 1
         self.current_schema_key = self._get_schema_key()
         self.step_number = 1
@@ -56,7 +58,7 @@ class ExecutiveAssistantEnv:
             step_number=1
         )
 
-    def step(self, action: ExecutiveAction):
+    def step(self, action: ExecutiveAction, timeout_s=None, **kwargs):  # noqa: ARG002
         if self.done:
             return (
                 ExecutiveObservation(
@@ -167,13 +169,14 @@ class ExecutiveAssistantEnv:
             {}
         )
 
-    def state(self):
+    @property
+    def state(self) -> ExecutiveState:
         schema = SCHEMAS.get(self.current_schema_key, {})
-        return {
-            "episode_count": self.episode_count,
-            "current_schema": self.current_schema_key,
-            "schema_name": schema.get("name", ""),
-            "current_task": self.current_scenario_key,
-            "step_number": self.step_number,
-            "done": self.done
-        }
+        return ExecutiveState(
+            episode_count=self.episode_count,
+            current_schema=self.current_schema_key,
+            schema_name=schema.get("name", ""),
+            current_task=self.current_scenario_key,
+            step_number=self.step_number,
+            is_done=self.done,
+        )
