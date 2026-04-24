@@ -147,5 +147,5 @@ v2 Startup scores highest because casual 100-word replies match default LLM beha
 - [Live Environment](https://huggingface.co/spaces/kanishk22/email-triage-openenv-env)
 - [Interactive API Docs](https://kanishk22-email-triage-openenv-env.hf.space/docs)
 - [Colab Training Notebook](https://colab.research.google.com/drive/1vHuqDneawjBNN3BanodcvuClMceLRigc?usp=sharing)
-- [Demo Video](https://youtu.be/LIMTsik57YQ)
+- [Demo Video](https://youtu.be/b_DLdksyDlE)
 - [GitHub Repository](https://github.com/cyborg-joshi/email-triage-openenv-env)
