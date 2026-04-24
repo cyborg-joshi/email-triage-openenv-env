@@ -28,6 +28,7 @@ rules change silently, forcing the agent to detect and adapt.
 | Interactive API Docs | https://kanishk22-email-triage-openenv-env.hf.space/docs |
 | Colab Training Notebook | https://colab.research.google.com/drive/1vHuqDneawjBNN3BanodcvuClMceLRigc?usp=sharing |
 | Demo Video | https://youtu.be/LIMTsik57YQ |
+| Blog / Writeup | *coming April 25–26* |
 | GitHub | https://github.com/cyborg-joshi/email-triage-openenv-env |
 
 ---
@@ -60,7 +61,11 @@ rules change silently, forcing the agent to detect and adapt.
 
 ![Before/After Fine-Tuning](https://media.githubusercontent.com/media/cyborg-joshi/email-triage-openenv-env/main/Before_after_finetuning.png)
 
-*Left: Episode-by-episode rewards across 3 schema phases. Right: Average reward per schema phase, base vs fine-tuned.*
+*Episode-by-episode reward across 3 schema phases (v1 Corporate → v2 Startup → v3 Executive). Red line = base model (Llama-3.3-70B, no fine-tuning). Green line = GRPO fine-tuned model (Llama-3.2-3B, LoRA). Updated at hackathon Grand Finale April 25–26.*
+
+### Training Loss Curve
+
+*Loss curve from GRPO fine-tuning run — committed to repo after hackathon training session (April 25–26).*
 
 ---
 
@@ -141,7 +146,7 @@ Fine-tuning uses **GRPO (Group Relative Policy Optimization)** from HuggingFace 
 - Training loop connects directly to the live HuggingFace Space via HTTP
 - 50 training episodes, 3 epochs, LoRA on q_proj + v_proj
 
-See the [Colab training notebook](*link*) to reproduce.
+See the [Colab training notebook](https://colab.research.google.com/drive/1vHuqDneawjBNN3BanodcvuClMceLRigc?usp=sharing) to reproduce.
 
 ---
 
@@ -153,7 +158,9 @@ See the [Colab training notebook](*link*) to reproduce.
 | `POST` | `/reset?task=<id>` | Start new episode |
 | `POST` | `/step` | Send action or reply |
 | `GET` | `/state` | Current episode state |
+| `GET` | `/rubrics` | Per-component reward breakdown (action / reply / conflict) |
 | `GET` | `/schema` | Active schema + drift schedule |
+| `POST` | `/admin/reset_env` | Reset episode counter to 0 (back to v1) |
 | `GET` | `/docs` | Interactive API documentation |
 
 ### Example: Full Episode
@@ -185,8 +192,7 @@ email-triage-openenv/
 │   ├── models.py        — WorldState, ExecutiveAction, ExecutiveObservation
 │   └── scenarios.py     — All 10 email scenarios + 3 schema definitions
 ├── server/
-│   ├── app.py           — FastAPI server (endpoints + admin reset)
-│   └── graders.py       — Macro-graders (trajectory + per-schema scoring)
+│   └── app.py           — FastAPI server (7 endpoints + singleton env)
 ├── before_after_finetuning.png  — Reward curves (base vs fine-tuned)
 ├── inference.py         — Agent script (calls environment via HTTP)
 ├── openenv.yaml         — OpenEnv manifest
