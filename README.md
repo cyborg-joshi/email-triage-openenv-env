@@ -28,7 +28,8 @@ rules change silently, forcing the agent to detect and adapt.
 | Interactive API Docs | https://kanishk22-email-triage-openenv-env.hf.space/docs |
 | Colab Training Notebook | https://colab.research.google.com/drive/1vHuqDneawjBNN3BanodcvuClMceLRigc?usp=sharing |
 | Demo Video | https://youtu.be/b_DLdksyDlE |
-| Blog / Writeup | *coming April 25–26* |
+| Blog / Writeup | [blog.md](./blog.md) |
+| WandB Training Logs | *link added after training run* |
 | GitHub | https://github.com/cyborg-joshi/email-triage-openenv-env |
 
 ---
@@ -224,3 +225,4 @@ uvicorn server.app:app --host 0.0.0.0 --port 8000
 ---
 
 **Author:** kanishk22 | Meta PyTorch OpenEnv × Scaler Hackathon Grand Finale 2026
+
