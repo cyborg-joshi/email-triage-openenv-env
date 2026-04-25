@@ -69,7 +69,11 @@ rules change silently, forcing the agent to detect and adapt.
 
 ### Training Logs
 
-[Live WandB run](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/5omalmor) — `train/rewards/reward_fn/mean` trends from ~0.32 → ~0.42 over 500 steps confirming reward signal was working throughout training.
+![train/rewards/reward_fn/mean](./wandb_reward_fn_mean.png)
+
+![train/reward](./wandb_train_reward.png)
+
+*GRPO fine-tuning run — `train/rewards/reward_fn/mean` trends from ~0.28 → ~0.42+ over 500 steps. The environment's reward function was the only training signal — no human labels. [Full WandB run](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/5omalmor)*
 
 ---
 
