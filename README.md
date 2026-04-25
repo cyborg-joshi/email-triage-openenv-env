@@ -29,7 +29,7 @@ rules change silently, forcing the agent to detect and adapt.
 | Colab Training Notebook | https://colab.research.google.com/drive/1vHuqDneawjBNN3BanodcvuClMceLRigc?usp=sharing |
 | Demo Video | https://youtu.be/b_DLdksyDlE |
 | Blog / Writeup | [blog.md](./blog.md) |
-| WandB Training Logs | *link added after training run* |
+| WandB Training Logs | https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/80f5b101 |
 | GitHub | https://github.com/cyborg-joshi/email-triage-openenv-env |
 
 ---
