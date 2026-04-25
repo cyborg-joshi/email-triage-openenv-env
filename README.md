@@ -16,7 +16,7 @@ The agent receives emails, calendar conflicts, and pending tasks — then must c
 the correct action and write an appropriate reply. Every 10 episodes, the priority
 rules change silently, forcing the agent to detect and adapt.
 
-**Theme:** 3.2 — World Modeling (Personal Tasks) + Patronus AI Schema Drift Bonus
+**Theme:** 3.2 — World Modeling (Personalized Tasks) — with Schema Drift for adaptive world modeling
 
 ---
 
@@ -28,9 +28,10 @@ rules change silently, forcing the agent to detect and adapt.
 | **Interactive Demo (Gradio)** | **https://huggingface.co/spaces/kanishk22/email-triage-demo** |
 | Interactive API Docs | https://kanishk22-email-triage-openenv-env.hf.space/docs |
 | HF Jobs Training Script | [train.py](./train.py) |
+| Colab Training Notebook | https://colab.research.google.com/drive/1gytu7Nlkm53UT1BN2_2fOFKcr-wNliQw?usp=sharing |
 | Demo Video | https://youtu.be/b_DLdksyDlE |
 | Blog / Writeup | [blog.md](./blog.md) |
-| WandB Training Logs | https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/tsjx1n1p |
+| WandB Training Logs | https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/5omalmor |
 | GitHub | https://github.com/cyborg-joshi/email-triage-openenv-env |
 
 ---
