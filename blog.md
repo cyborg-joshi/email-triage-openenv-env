@@ -97,6 +97,19 @@ Two components: keyword coverage (25%) and word limit compliance (15%).
 
 If the reply hits 75%+ of the required keywords in under 6 words, it gets flagged as **keyword stuffing** and the score drops by 60%. You can't game the rubric by being suspiciously short and keyword-dense.
 
+Here's the actual detection code from `graders.py`:
+
+```python
+unique_ratio = unique_words / word_count
+is_stuffing = (
+    raw_keyword_score >= 0.75
+    and (word_count < 6 or unique_ratio < 0.5)
+)
+keyword_score = raw_keyword_score * (0.4 if is_stuffing else 1.0)
+```
+
+High keyword hit rate + suspiciously short reply = 60% penalty. The model has to actually write a coherent response, not spam keywords.
+
 ### Conflict Awareness (20%)
 Did the reply acknowledge any scheduling conflict in the world state? If the calendar shows "Dad's retirement dinner at 6pm" and the production emergency is at 5pm, the agent should say something like "I'll be 20 minutes late to dinner." Free marks if there's no conflict — this rubric only activates when there's something to notice.
 
@@ -104,6 +117,17 @@ Did the reply acknowledge any scheduling conflict in the world state? If the cal
 All scores are clamped to `[0.01, 0.99]`.
 
 Never exactly 0 — that kills the gradient signal entirely, the model stops learning. Never exactly 1.0 — a perfect score means the model stops exploring. The 0.01 floor keeps training alive even on terrible responses.
+
+### What This Looks Like in Practice
+
+Same scenario: production is down, dad's dinner is in 2 hours. Schema v1 Corporate — escalate is correct, formal tone, 50 words max.
+
+| | Reply | Action | Reply Quality | Conflict | **Total** |
+|---|---|---|---|---|---|
+| ❌ Bad | `"ok"` | 0.01 | 0.05 | 0.0 | **0.03** |
+| ✅ Good | `"Escalating now. Looping in on-call. Will be 20 min late to dinner."` | 1.0 | 0.84 | 1.0 | **0.74** |
+
+The bad reply scores near zero on everything. The good reply gets full action credit, strong reply quality, and bonus points for acknowledging the dinner conflict. That 0.71 gap is what the agent is learning to close.
 
 ### Fully Introspectable
 The `/rubrics` endpoint returns per-component scores after every episode:
