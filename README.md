@@ -25,11 +25,12 @@ rules change silently, forcing the agent to detect and adapt.
 | Resource | Link |
 |----------|------|
 | Live Environment | https://huggingface.co/spaces/kanishk22/email-triage-openenv-env |
+| **Interactive Demo (Gradio)** | **https://huggingface.co/spaces/kanishk22/email-triage-demo** |
 | Interactive API Docs | https://kanishk22-email-triage-openenv-env.hf.space/docs |
-| Colab Training Notebook | https://colab.research.google.com/drive/1vHuqDneawjBNN3BanodcvuClMceLRigc?usp=sharing |
+| HF Jobs Training Script | [train.py](./train.py) |
 | Demo Video | https://youtu.be/b_DLdksyDlE |
 | Blog / Writeup | [blog.md](./blog.md) |
-| WandB Training Logs | https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/80f5b101 |
+| WandB Training Logs | https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/tsjx1n1p |
 | GitHub | https://github.com/cyborg-joshi/email-triage-openenv-env |
 
 ---
@@ -200,6 +201,19 @@ email-triage-openenv/
 ├── Dockerfile           — Container config for HuggingFace Spaces
 └── requirements.txt     — Dependencies
 ```
+
+---
+
+## Interactive Demo
+
+Try the environment yourself — no API knowledge needed:
+
+**[https://huggingface.co/spaces/kanishk22/email-triage-demo](https://huggingface.co/spaces/kanishk22/email-triage-demo)**
+
+1. Pick a scenario (e.g. `conflict_work`)
+2. Click **Good Example** or **Bad Example** to pre-fill action + reply
+3. Hit **Submit & Score** — see reward + rubric breakdown instantly
+4. Switch scenarios to explore schema drift across Corporate / Startup / Executive modes
 
 ---
 

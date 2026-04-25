@@ -1,0 +1,5 @@
+unsloth
+trl
+datasets
+wandb
+requests
