@@ -63,17 +63,22 @@ def submit_action(task, action, reply):
         res = requests.post(f"{ENV_URL}/step", json={"action":action,"reply":reply,"step":2}, timeout=15)
         reward = res.json().get("reward", 0.0)
 
-        # Compute approximate breakdown (rubrics endpoint affected by concurrent training)
+        # Get real per-component scores from /rubrics
+        rubrics_res = requests.get(f"{ENV_URL}/rubrics", timeout=10)
+        rubrics = rubrics_res.json() if rubrics_res.ok else {}
+
+        action_score   = rubrics.get("action_correctness", {}).get("last_score", reward)
+        reply_score    = rubrics.get("reply_quality",      {}).get("last_score", reward)
+        conflict_score = rubrics.get("conflict_awareness", {}).get("last_score", reward)
+
         color = "🟢" if reward >= 0.6 else "🟡" if reward >= 0.4 else "🔴"
         bar = lambda v: "█"*int(v*20) + "░"*(20-int(v*20))
 
-        # Estimate component scores from reward signal
         total_out = f"{color} **Total Reward: {reward:.2f} / 1.00**"
         breakdown = (
-            f"Action (40%):         {bar(reward)} ~{reward:.2f}\n"
-            f"Reply Quality (40%):  {bar(reward)} ~{reward:.2f}\n"
-            f"Conflict (20%):       {bar(reward)} ~{reward:.2f}\n\n"
-            f"*(Full breakdown: GET /rubrics on the live API)*"
+            f"Action Correctness (40%):  {bar(action_score)} {action_score:.2f}\n"
+            f"Reply Quality      (40%):  {bar(reply_score)} {reply_score:.2f}\n"
+            f"Conflict Awareness (20%):  {bar(conflict_score)} {conflict_score:.2f}"
         )
         verdict = (
             "Excellent! Agent picked the right action and wrote a schema-appropriate reply." if reward >= 0.7
