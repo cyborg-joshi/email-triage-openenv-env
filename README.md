@@ -29,7 +29,7 @@ rules change silently, forcing the agent to detect and adapt.
 | Interactive API Docs | https://kanishk22-email-triage-openenv-env.hf.space/docs |
 | HF Jobs Training Script | [train.py](./train.py) |
 | Colab Training Notebook | https://colab.research.google.com/drive/1gytu7Nlkm53UT1BN2_2fOFKcr-wNliQw?usp=sharing |
-| Demo Video | https://youtu.be/b_DLdksyDlE |
+| Demo Video | https://youtu.be/sfG-9tPbusc |
 | Blog / Writeup | [blog.md](./blog.md) |
 | WandB Training Logs | https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/5omalmor |
 | GitHub | https://github.com/cyborg-joshi/email-triage-openenv-env |
