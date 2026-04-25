@@ -116,16 +116,20 @@ The base model defaults to "reply" in almost every scenario regardless of contex
 
 v2 Startup scores highest because casual 100-word replies match default LLM behaviour. v3 Executive scores lowest because the 30-word limit is brutal for a verbose model.
 
-### After GRPO Fine-Tuning
+### After GRPO Fine-Tuning (Unsloth + TRL, T4 GPU)
 
 | Schema Phase | Base | Fine-Tuned | Improvement |
 |-------------|------|-----------|-------------|
-| v1 Corporate | 0.41 | *TBD* | *TBD* |
-| v2 Startup | 0.58 | *TBD* | *TBD* |
-| v3 Executive | 0.50 | *TBD* | *TBD* |
-| **Overall** | **0.496** | *TBD* | *TBD* |
+| v1 Corporate | 0.41 | 0.38 | -7% |
+| v2 Startup | 0.58 | 0.39 | -33% |
+| v3 Executive | 0.50 | 0.45 | -10% |
+| **Overall** | **0.496** | **0.407** | **-18%** |
 
-*Results updated after hackathon fine-tuning run, April 25–26 2026.*
+*Note: Base model is Llama-3.3-70B. Fine-tuned model is Llama-3.2-3B (23x smaller — LoRA r=16, 4-bit quantized). The 3B model collapsed to always choosing `delegate` — a known GRPO action collapse failure mode where the model finds a safe local optimum and stops exploring. Next step: entropy bonus to force exploration.*
+
+*Results from hackathon Grand Finale, April 25–26 2026.*
+
+[WandB Training Logs](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/5omalmor) — `train/rewards/reward_fn/mean` trends from ~0.32 → ~0.42 over 500 steps, confirming the reward signal was working.
 
 ![Reward Curves](https://media.githubusercontent.com/media/cyborg-joshi/email-triage-openenv-env/main/Before_after_finetuning.png)
 
@@ -149,3 +153,4 @@ v2 Startup scores highest because casual 100-word replies match default LLM beha
 - [Colab Training Notebook](https://colab.research.google.com/drive/1vHuqDneawjBNN3BanodcvuClMceLRigc?usp=sharing)
 - [Demo Video](https://youtu.be/b_DLdksyDlE)
 - [GitHub Repository](https://github.com/cyborg-joshi/email-triage-openenv-env)
+- [WandB Training Logs](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/5omalmor)
