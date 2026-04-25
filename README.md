@@ -150,7 +150,7 @@ Fine-tuning uses **GRPO (Group Relative Policy Optimization)** from HuggingFace 
 - Training loop connects directly to the live HuggingFace Space via HTTP
 - 50 training episodes, 3 epochs, LoRA on q_proj + v_proj
 
-See the [Colab training notebook](https://colab.research.google.com/drive/1vHuqDneawjBNN3BanodcvuClMceLRigc?usp=sharing) to reproduce.
+See the [Colab training notebook](https://colab.research.google.com/drive/1gytu7Nlkm53UT1BN2_2fOFKcr-wNliQw?usp=sharing) to reproduce.
 
 ---
 
