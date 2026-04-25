@@ -52,12 +52,14 @@ rules change silently, forcing the agent to detect and adapt.
 
 | Schema Phase | Base | Fine-Tuned | Improvement |
 |-------------|------|-----------|-------------|
-| v1 Corporate | 0.41 | *TBD* | *TBD* |
-| v2 Startup | 0.58 | *TBD* | *TBD* |
-| v3 Executive | 0.50 | *TBD* | *TBD* |
-| **Overall** | **0.496** | *TBD* | *TBD* |
+| v1 Corporate | 0.41 | 0.38 | -7% |
+| v2 Startup | 0.58 | 0.39 | -33% |
+| v3 Executive | 0.50 | 0.45 | -10% |
+| **Overall** | **0.496** | **0.407** | **-18%** |
 
-*Fine-tuning results updated at hackathon Grand Finale, April 25–26 2026.*
+*Note: Base model is Llama-3.3-70B. Fine-tuned model is Llama-3.2-3B (23x smaller). The 3B model collapsed to always choosing `delegate` — a known GRPO action collapse failure mode. Next step: entropy bonus to force exploration.*
+
+*Results from hackathon Grand Finale, April 25–26 2026.*
 
 ### Reward Curves
 
