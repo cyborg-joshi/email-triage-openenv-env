@@ -51,7 +51,13 @@ The agent never knows which world it's in. It must detect the shift purely from 
 
 ## Results — Training Actually Helped (+14%)
 
-### WandB Training Curves
+### Training Curves — Loss & Reward
+
+![Training Loss + Reward Curves — Llama-3.2-3B, 600 steps](./training_curves_v5.png)
+
+*Left: training loss decreasing toward 0 (model converging). Right: reward trending upward, crossing above the 3B base (0.340) red line toward final eval score (0.389). Real WandB data from run xgiv7xo6.*
+
+### WandB Raw Charts
 
 ![train/rewards/reward_fn/mean — x: training step, y: mean reward per batch](./wandb_reward_fn_mean.png)
 
