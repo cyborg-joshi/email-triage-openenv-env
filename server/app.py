@@ -19,7 +19,7 @@ def health():
         "status": "ok",
         "version": "2.0.0",
         "environment": "ai-executive-assistant",
-        "theme": "3.2 World Modeling (Personal Tasks) + Patronus AI Schema Drift"
+        "theme": "3.2 World Modeling (Personal Tasks) + Schema Drift"
     }
 
 
