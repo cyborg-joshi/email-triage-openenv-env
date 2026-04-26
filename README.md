@@ -29,10 +29,10 @@ This environment tests whether an LLM can detect and adapt to **silently changin
 | **Interactive Demo (Gradio)** | **https://huggingface.co/spaces/kanishk22/email-triage-demo** |
 | Interactive API Docs | https://kanishk22-email-triage-openenv-env.hf.space/docs |
 | HF Jobs Training Script | [train.py](./train.py) |
-| Colab Training Notebook | https://colab.research.google.com/drive/1gytu7Nlkm53UT1BN2_2fOFKcr-wNliQw?usp=sharing |
+| Colab Training Notebook | https://colab.research.google.com/drive/1sqHn3AJB-PhwQ936fwWS7R4LSt_GPifC?usp=sharing |
 | Demo Video | https://youtu.be/sfG-9tPbusc |
 | Blog / Writeup | [blog.md](./blog.md) |
-| WandB Training Logs | https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/5omalmor |
+| WandB Training Logs | https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/xgiv7xo6 |
 | GitHub | https://github.com/cyborg-joshi/email-triage-openenv-env |
 
 ---
@@ -41,25 +41,29 @@ This environment tests whether an LLM can detect and adapt to **silently changin
 
 ### Training Progress — Reward Improved During Fine-Tuning
 
-![train/rewards/reward_fn/mean — x: training step (0→500), y: mean reward per batch](./wandb_reward_fn_mean.png)
+![train/rewards/reward_fn/mean — x: training step (0→4500), y: mean reward per batch](./wandb_reward_fn_mean.png)
 
-*`train/rewards/reward_fn/mean` over 500 GRPO training steps. Reward trends upward from ~0.28 → ~0.42+. The environment's live reward function was the only training signal — no human labels, no reward model. [Full WandB run](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/5omalmor)*
+*`train/rewards/reward_fn/mean` over 600 GRPO training steps. Reward trends upward from ~0.30 → ~0.40+. The environment's live reward function was the only training signal — no human labels, no reward model. [Full WandB run](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/xgiv7xo6)*
+
+![train/reward — x: training step, y: reward](./wandb_train_reward.png)
+
+*`train/reward` over 600 steps — same upward trend confirming the learning signal was working throughout.*
 
 ### Before vs After — Episode Rewards Across 3 Schema Phases
 
-![Before/After Fine-Tuning — x: episode (1→30), y: reward per episode](https://media.githubusercontent.com/media/cyborg-joshi/email-triage-openenv-env/main/Before_after_finetuning.png)
+![Before/After Fine-Tuning — x: episode (1→30), y: reward per episode](./before_after_finetuning.png)
 
-*Episode-by-episode reward across all 3 schema phases. Red = Llama-3.3-70B base (no fine-tuning). Green = GRPO fine-tuned Llama-3.2-3B (LoRA). Reward drops at episodes 10 and 20 show schema drift kicking in — rules changed silently.*
+*Episode-by-episode reward across all 3 schema phases. Red = Llama-3.2-3B base (no training). Green = GRPO fine-tuned Llama-3.2-3B. Reward drops at episodes 10 and 20 show schema drift kicking in — rules changed silently, both models take a hit.*
 
 ### Key Result — GRPO Fine-Tuning Improves 3B Model by +14%
 
-| Model | v1 Corporate | v2 Startup | v3 Executive | **Overall** |
-|-------|-------------|-----------|-------------|------------|
-| Llama-3.2-3B (no training) | 0.301 | 0.303 | 0.415 | **0.340** |
-| Llama-3.2-3B + GRPO fine-tuned | 0.346 | 0.385 | 0.435 | **0.389** |
-| Llama-3.3-70B (no training) | 0.41 | 0.58 | 0.50 | **0.496** |
+| Model | v1 Corporate | v2 Startup | v3 Executive | **Overall** | **vs 3B Base** |
+|-------|-------------|-----------|-------------|------------|----------------|
+| Llama-3.2-3B (no training) | 0.301 | 0.303 | 0.415 | **0.340** | baseline |
+| Llama-3.2-3B + GRPO fine-tuned | 0.346 | 0.385 | 0.435 | **0.389** | **+14%** |
+| Llama-3.3-70B (no training, reference) | 0.41 | 0.58 | 0.50 | **0.496** | +46% |
 
-*GRPO fine-tuning improves the 3B model by **+14% overall** (+15% v1, +27% v2, +5% v3). The fine-tuned 3B model achieves **78% of the 70B baseline at 1/23rd the model size** — trained purely from the live environment's reward signal, no human labels.*
+*GRPO fine-tuning on the **same 3B model** improves overall reward by **+14%** (+15% v1, +27% v2, +5% v3). Trained purely from the live environment's reward signal — no human labels, no reward model. The fine-tuned 3B also achieves **78% of the 70B reference score at 1/23rd the model size.***
 
 ---
 
@@ -140,7 +144,7 @@ Fine-tuning uses **GRPO (Group Relative Policy Optimization)** from HuggingFace 
 - Training loop connects directly to the live HuggingFace Space via HTTP
 - 50 training episodes, 3 epochs, LoRA on q_proj + v_proj
 
-See the [Colab training notebook](https://colab.research.google.com/drive/1gytu7Nlkm53UT1BN2_2fOFKcr-wNliQw?usp=sharing) to reproduce.
+See the [Colab training notebook](https://colab.research.google.com/drive/1sqHn3AJB-PhwQ936fwWS7R4LSt_GPifC?usp=sharing) to reproduce.
 
 ---
 

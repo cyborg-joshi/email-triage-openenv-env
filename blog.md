@@ -173,15 +173,15 @@ The reward trends upward. The signal was working. The model was learning — whi
 
 ### The Numbers
 
-| Model | v1 Corporate | v2 Startup | v3 Executive | **Overall** |
-|-------|-------------|-----------|-------------|------------|
-| Llama-3.2-3B (no training) | 0.301 | 0.303 | 0.415 | **0.340** |
-| Llama-3.2-3B + GRPO fine-tuned | 0.346 | 0.385 | 0.435 | **0.389** |
-| Llama-3.3-70B (no training) | 0.41 | 0.58 | 0.50 | **0.496** |
+| Model | v1 Corporate | v2 Startup | v3 Executive | **Overall** | **Improvement** |
+|-------|-------------|-----------|-------------|------------|-----------------|
+| Llama-3.2-3B (no training) | 0.301 | 0.303 | 0.415 | **0.340** | baseline |
+| Llama-3.2-3B + GRPO fine-tuned | 0.346 | 0.385 | 0.435 | **0.389** | **+14%** |
+| Llama-3.3-70B (no training, reference) | 0.41 | 0.58 | 0.50 | **0.496** | +46% |
 
-GRPO fine-tuning improved the 3B model by **+14% overall**. v2 Startup saw the biggest gain (+27%) — the model learned that client emails need immediate replies, not delegation. v3 Executive improved the least (+5%) because the brutal 30-word limit is genuinely hard to satisfy.
+GRPO fine-tuning improved the **same 3B model by +14% overall**. v2 Startup saw the biggest gain (+27%) — the model learned that client emails need immediate replies, not delegation. v3 Executive improved the least (+5%) because the brutal 30-word limit is genuinely hard to satisfy.
 
-The fine-tuned 3B model reaches **78% of the 70B baseline at 1/23rd the model size** — trained purely from live reward signals, no human labels, no reward model.
+The fine-tuned 3B model also reaches **78% of the 70B reference score at 1/23rd the model size** — trained purely from live reward signals, no human labels, no reward model.
 
 ### Fixing Action Collapse
 
@@ -234,8 +234,8 @@ There's also a **Schema Drift Challenge** — it runs the same `drift_detection`
 | Live RL Environment | [HuggingFace Space](https://huggingface.co/spaces/kanishk22/email-triage-openenv-env) |
 | Interactive Demo | [Gradio App](https://huggingface.co/spaces/kanishk22/email-triage-demo) |
 | API Docs | [/docs](https://kanishk22-email-triage-openenv-env.hf.space/docs) |
-| Training Notebook | [Colab](https://colab.research.google.com/drive/1gytu7Nlkm53UT1BN2_2fOFKcr-wNliQw?usp=sharing) |
-| Training Logs | [WandB](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/5omalmor) |
+| Training Notebook | [Colab](https://colab.research.google.com/drive/1sqHn3AJB-PhwQ936fwWS7R4LSt_GPifC?usp=sharing) |
+| Training Logs | [WandB](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/xgiv7xo6) |
 | Source Code | [GitHub](https://github.com/cyborg-joshi/email-triage-openenv-env) |
 | Demo Video | [YouTube](https://youtu.be/sfG-9tPbusc) |
 
