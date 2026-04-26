@@ -1,5 +1,5 @@
 """
-HF Jobs training script — improved v2
+HF Jobs training script — v3 anti-collapse
   hf jobs uv run --flavor t4-small python train.py
 """
 import subprocess
@@ -35,7 +35,7 @@ Rules learned from context:
 - Spam/phishing → ignore"""
 
 wandb.login(key=os.environ.get("WANDB_API_KEY", ""), relogin=True)
-wandb.init(project="email-triage-schema-drift", name="grpo-llama3b-v3-short-replies")
+wandb.init(project="email-triage-schema-drift", name="grpo-llama3b-v4-anti-collapse")
 
 # Reset environment to episode 0 so training covers all 3 schemas
 print("Resetting environment to episode 0...")
@@ -79,6 +79,7 @@ def parse_output(text):
 
 def env_reward(completions, **kw):
     rewards = []
+    actions_in_batch = []
     for i, c in enumerate(completions):
         try:
             task = TASKS[i % len(TASKS)]
@@ -89,6 +90,14 @@ def env_reward(completions, **kw):
             result = requests.post(f"{ENV_URL}/step",
                 json={"action": action, "reply": reply, "step": 2}, timeout=15)
             r = float(result.json().get("reward", 0.01))
+
+            # Anti-collapse bonus: reward action diversity within batch
+            # If model always picks same action, no bonus. Variety gets +0.08.
+            actions_in_batch.append(action)
+            unique_actions = len(set(actions_in_batch))
+            diversity_bonus = min(0.08, (unique_actions - 1) * 0.02)
+            r = min(0.99, r + diversity_bonus)
+
             print(f"  task={task} action={action} reward={r:.3f}")
             rewards.append(r)
         except Exception as e:
@@ -105,9 +114,10 @@ trainer = GRPOTrainer(
         per_device_train_batch_size=2,
         gradient_accumulation_steps=4,
         learning_rate=2e-5,           # was 5e-6, increased
-        num_generations=4,
-        max_prompt_length=1024,       # match model seq length
-        max_completion_length=80,   # force short replies — stops word limit violations
+        num_generations=8,            # more completions = more action variety to compare
+        max_prompt_length=1024,
+        max_completion_length=80,
+        temperature=1.4,              # higher temp forces exploration, prevents delegate collapse
         logging_steps=5,
         report_to="wandb",
     ),
