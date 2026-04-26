@@ -220,7 +220,7 @@ This penalises batches where every completion picks the same action. The final t
 
 ### Before vs After — Reward Curves
 
-![Before/After Fine-Tuning](https://media.githubusercontent.com/media/cyborg-joshi/email-triage-openenv-env/main/Before_after_finetuning.png)
+![Before/After Fine-Tuning](./before_after_finetuning.png)
 
 *3B base (no training) vs GRPO fine-tuned 3B across 30 episodes. The drops at episodes 10 and 20 are schema drift — rules changed silently, both models take a hit before adapting.*
 
