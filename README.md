@@ -9,14 +9,15 @@ pinned: false
 
 # AI Personal Executive Assistant — OpenEnv Environment
 
-An OpenEnv-compatible reinforcement learning environment that trains AI agents
-to handle realistic email scenarios with **dynamic world state** and **schema drift**.
+## The Problem
 
-The agent receives emails, calendar conflicts, and pending tasks — then must choose
-the correct action and write an appropriate reply. Every 10 episodes, the priority
-rules change silently, forcing the agent to detect and adapt.
+Real AI assistants are trained on fixed priority rules. But real humans switch contexts constantly — a startup founder, a corporate VP, and a board-level executive handle the same email completely differently. The correct action depends not just on the email, but on *who you are and what world you're in.*
 
-**Theme:** 3.2 — World Modeling (Personalized Tasks) — with Schema Drift for adaptive world modeling
+This environment tests whether an LLM can detect and adapt to **silently changing rules** — without being told the rules changed. Every 10 episodes, the priority schema switches. The agent must figure out the new rules from reward signals alone.
+
+**This is schema drift. It's what makes this environment genuinely hard.**
+
+**Theme:** 3.2 — World Modeling (Personalized Tasks)
 
 ---
 
@@ -38,18 +39,30 @@ rules change silently, forcing the agent to detect and adapt.
 
 ## Results
 
-### Base Model (Llama-3.3-70B, No Fine-Tuning)
+### Training Progress — Reward Improved During Fine-Tuning
 
-30 episodes across all 3 schema phases, evaluated on the live environment:
+![train/rewards/reward_fn/mean — x: training step (0→500), y: mean reward per batch](./wandb_reward_fn_mean.png)
+
+*`train/rewards/reward_fn/mean` over 500 GRPO training steps. Reward trends upward from ~0.28 → ~0.42+. The environment's live reward function was the only training signal — no human labels, no reward model. [Full WandB run](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/5omalmor)*
+
+### Before vs After — Episode Rewards Across 3 Schema Phases
+
+![Before/After Fine-Tuning — x: episode (1→30), y: reward per episode](https://media.githubusercontent.com/media/cyborg-joshi/email-triage-openenv-env/main/Before_after_finetuning.png)
+
+*Episode-by-episode reward across all 3 schema phases. Red = Llama-3.3-70B base (no fine-tuning). Green = GRPO fine-tuned Llama-3.2-3B (LoRA). Reward drops at episodes 10 and 20 show schema drift kicking in — rules changed silently.*
+
+### Baseline Evaluation (Llama-3.3-70B, Zero Fine-Tuning)
+
+30 episodes across all 3 schema phases on the live environment:
 
 | Schema Phase | Episodes | Avg Reward |
 |-------------|----------|-----------|
 | v1 Corporate | 1–10 | 0.41 |
 | v2 Startup | 11–20 | 0.58 |
 | v3 Executive | 21–30 | 0.50 |
-| **Overall** | 30 | **0.496** |
+| **Overall** | **30** | **0.496** |
 
-### After GRPO Fine-Tuning (Llama-3.2-3B vs Llama-3.3-70B baseline)
+### Model Size Comparison (70B Baseline vs 3B Fine-Tuned)
 
 | Schema Phase | 70B Base | 3B Fine-Tuned |
 |-------------|----------|--------------|
@@ -58,23 +71,7 @@ rules change silently, forcing the agent to detect and adapt.
 | v3 Executive | 0.50 | 0.45 |
 | **Overall** | **0.496** | **0.407** |
 
-*The 3B fine-tuned model achieves ~82% of the 70B baseline score at 1/23rd the size. The 3B model collapsed to always choosing `delegate` — a known GRPO action collapse failure mode where the model finds a safe local optimum and stops exploring. Fix: entropy bonus in the GRPO loss to force action diversity.*
-
-*Results from hackathon Grand Finale, April 25–26 2026.*
-
-### Reward Curves
-
-![Before/After Fine-Tuning](https://media.githubusercontent.com/media/cyborg-joshi/email-triage-openenv-env/main/Before_after_finetuning.png)
-
-*Episode-by-episode reward across 3 schema phases (v1 Corporate → v2 Startup → v3 Executive). Red line = base model (Llama-3.3-70B, no fine-tuning). Green line = GRPO fine-tuned model (Llama-3.2-3B, LoRA). Updated at hackathon Grand Finale April 25–26.*
-
-### Training Logs
-
-![train/rewards/reward_fn/mean](./wandb_reward_fn_mean.png)
-
-![train/reward](./wandb_train_reward.png)
-
-*GRPO fine-tuning run — `train/rewards/reward_fn/mean` trends from ~0.28 → ~0.42+ over 500 steps. The environment's reward function was the only training signal — no human labels. [Full WandB run](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/5omalmor)*
+*Fine-tuned Llama-3.2-3B achieves ~82% of the Llama-3.3-70B score at 1/23rd the model size. The 3B model collapsed to always choosing `delegate` — a known GRPO action collapse failure mode (model finds a safe partial-credit floor and stops exploring). The training reward DID improve (0.28→0.42 on WandB) — the collapse happened in final evaluation, not during training. Fix: entropy bonus in GRPO loss.*
 
 ---
 
@@ -156,6 +153,14 @@ Fine-tuning uses **GRPO (Group Relative Policy Optimization)** from HuggingFace 
 - 50 training episodes, 3 epochs, LoRA on q_proj + v_proj
 
 See the [Colab training notebook](https://colab.research.google.com/drive/1gytu7Nlkm53UT1BN2_2fOFKcr-wNliQw?usp=sharing) to reproduce.
+
+---
+
+## Why This Matters
+
+Most RL environments have fixed rules. Real-world tasks don't. A personal assistant deployed at a startup behaves differently than one deployed at a bank — and both behave differently from one working for an executive who switched industries last month.
+
+Schema drift is a proxy for **distribution shift in deployed AI systems** — the thing that causes production models to silently degrade. This environment forces the agent to detect and adapt, which is closer to the real problem than any static benchmark.
 
 ---
 
