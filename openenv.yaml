@@ -11,7 +11,7 @@ description: >
 
 version: "2.0.0"
 author: kanishk22
-theme: "3.2 - World Modeling (Personal Tasks) + Patronus AI Schema Drift"
+theme: "3.2 - World Modeling (Personalized Tasks)"
 
 observation_space:
   type: structured_text

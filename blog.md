@@ -221,7 +221,7 @@ There's also a **Schema Drift Challenge** — it runs the same `drift_detection`
 
 ---
 
-## What I'd Do Next
+## What's Next
 
 1. **Entropy bonus** in GRPO loss — forces the model to explore all 5 actions instead of collapsing to one safe choice
 2. **LLM-as-judge** for reply quality — more robust than keyword matching, though it adds training-time latency
