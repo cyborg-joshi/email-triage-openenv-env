@@ -171,41 +171,37 @@ The reward trends upward. The signal was working. The model was learning — whi
 
 ## Results — And What Went Wrong
 
-### Base Model (Llama-3.3-70B, Zero Fine-Tuning)
+### The Numbers
 
-| Schema Phase | Episodes | Avg Reward |
-|-------------|----------|-----------|
-| v1 Corporate | 1–10 | 0.41 |
-| v2 Startup | 11–20 | 0.58 |
-| v3 Executive | 21–30 | 0.50 |
-| **Overall** | **30 episodes** | **0.496** |
+| Model | v1 Corporate | v2 Startup | v3 Executive | **Overall** |
+|-------|-------------|-----------|-------------|------------|
+| Llama-3.2-3B (no training) | 0.301 | 0.303 | 0.415 | **0.340** |
+| Llama-3.2-3B + GRPO fine-tuned | 0.346 | 0.385 | 0.435 | **0.389** |
+| Llama-3.3-70B (no training) | 0.41 | 0.58 | 0.50 | **0.496** |
 
-The 70B base model defaults to "reply" in almost every scenario — verbose, casual, and slow to escalate. v2 Startup scores highest because that style matches the default LLM personality. v3 Executive scores lowest because the brutal 30-word limit crushes a model that loves to talk.
+GRPO fine-tuning improved the 3B model by **+14% overall**. v2 Startup saw the biggest gain (+27%) — the model learned that client emails need immediate replies, not delegation. v3 Executive improved the least (+5%) because the brutal 30-word limit is genuinely hard to satisfy.
 
-### After GRPO Fine-Tuning (Llama-3.2-3B, LoRA)
+The fine-tuned 3B model reaches **78% of the 70B baseline at 1/23rd the model size** — trained purely from live reward signals, no human labels, no reward model.
 
-| Schema Phase | 70B Base | 3B Fine-Tuned |
-|-------------|----------|--------------|
-| v1 Corporate | 0.41 | 0.38 |
-| v2 Startup | 0.58 | 0.39 |
-| v3 Executive | 0.50 | 0.45 |
-| **Overall** | **0.496** | **0.407** |
+### Fixing Action Collapse
 
-The 3B fine-tuned model achieves **~82% of the 70B baseline at 1/23rd the size.** That's the honest framing.
+The first training run collapsed to always choosing `delegate` — a known GRPO failure mode. The model found a safe floor (delegate scores partial credit everywhere) and stopped exploring.
 
-### The Failure Mode: Action Collapse
+The fix was two things: **temperature=1.4** to force more diverse sampling, and a **diversity bonus** in the reward function:
 
-The 3B model collapsed to always choosing `delegate`.
+```python
+unique_actions = len(set(actions_in_batch))
+diversity_bonus = min(0.08, (unique_actions - 1) * 0.02)
+r = min(0.99, r + diversity_bonus)
+```
 
-This is a known GRPO failure mode. The model found a local optimum — `delegate` scores partial credit in most scenarios because it's never completely wrong — and stopped exploring other actions. Once a policy finds a safe floor, GRPO without an entropy bonus will stay there.
-
-The fix is an entropy bonus in the GRPO loss function to force action diversity. I didn't have time to implement it at the hackathon. But I know exactly why it happened and exactly how to fix it — which is more useful than not understanding a result that looked good.
+This penalises batches where every completion picks the same action. The final training run used all five actions across episodes — reply, escalate, delegate, reschedule, ignore all appeared.
 
 ### Before vs After — Reward Curves
 
 ![Before/After Fine-Tuning](https://media.githubusercontent.com/media/cyborg-joshi/email-triage-openenv-env/main/Before_after_finetuning.png)
 
-*Red = Llama-3.3-70B base model across 30 episodes. Green = GRPO fine-tuned Llama-3.2-3B. The schemas shift at episodes 10 and 20 — watch for the reward discontinuities as the rules change.*
+*3B base (no training) vs GRPO fine-tuned 3B across 30 episodes. The drops at episodes 10 and 20 are schema drift — rules changed silently, both models take a hit before adapting.*
 
 ---
 

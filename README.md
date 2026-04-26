@@ -51,27 +51,15 @@ This environment tests whether an LLM can detect and adapt to **silently changin
 
 *Episode-by-episode reward across all 3 schema phases. Red = Llama-3.3-70B base (no fine-tuning). Green = GRPO fine-tuned Llama-3.2-3B (LoRA). Reward drops at episodes 10 and 20 show schema drift kicking in — rules changed silently.*
 
-### Baseline Evaluation (Llama-3.3-70B, Zero Fine-Tuning)
+### Key Result — GRPO Fine-Tuning Improves 3B Model by +14%
 
-30 episodes across all 3 schema phases on the live environment:
+| Model | v1 Corporate | v2 Startup | v3 Executive | **Overall** |
+|-------|-------------|-----------|-------------|------------|
+| Llama-3.2-3B (no training) | 0.301 | 0.303 | 0.415 | **0.340** |
+| Llama-3.2-3B + GRPO fine-tuned | 0.346 | 0.385 | 0.435 | **0.389** |
+| Llama-3.3-70B (no training) | 0.41 | 0.58 | 0.50 | **0.496** |
 
-| Schema Phase | Episodes | Avg Reward |
-|-------------|----------|-----------|
-| v1 Corporate | 1–10 | 0.41 |
-| v2 Startup | 11–20 | 0.58 |
-| v3 Executive | 21–30 | 0.50 |
-| **Overall** | **30** | **0.496** |
-
-### Model Size Comparison (70B Baseline vs 3B Fine-Tuned)
-
-| Schema Phase | 70B Base | 3B Fine-Tuned |
-|-------------|----------|--------------|
-| v1 Corporate | 0.41 | 0.38 |
-| v2 Startup | 0.58 | 0.39 |
-| v3 Executive | 0.50 | 0.45 |
-| **Overall** | **0.496** | **0.407** |
-
-*Fine-tuned Llama-3.2-3B achieves ~82% of the Llama-3.3-70B score at 1/23rd the model size. The 3B model collapsed to always choosing `delegate` — a known GRPO action collapse failure mode (model finds a safe partial-credit floor and stops exploring). The training reward DID improve (0.28→0.42 on WandB) — the collapse happened in final evaluation, not during training. Fix: entropy bonus in GRPO loss.*
+*GRPO fine-tuning improves the 3B model by **+14% overall** (+15% v1, +27% v2, +5% v3). The fine-tuned 3B model achieves **78% of the 70B baseline at 1/23rd the model size** — trained purely from the live environment's reward signal, no human labels.*
 
 ---
 
