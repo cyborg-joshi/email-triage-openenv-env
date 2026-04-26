@@ -7,17 +7,29 @@ sdk: docker
 pinned: false
 ---
 
-# AI Personal Executive Assistant — OpenEnv Environment
+# AI Executive Assistant — Schema Drift RL Environment
 
-## The Problem
-
-Real AI assistants are trained on fixed priority rules. But real humans switch contexts constantly — a startup founder, a corporate VP, and a board-level executive handle the same email completely differently. The correct action depends not just on the email, but on *who you are and what world you're in.*
-
-This environment tests whether an LLM can detect and adapt to **silently changing rules** — without being told the rules changed. Every 10 episodes, the priority schema switches. The agent must figure out the new rules from reward signals alone.
-
-**This is schema drift. It's what makes this environment genuinely hard.**
+> **The rules change every 10 episodes. Silently. Without telling the agent. Can it figure out the new rules from reward signals alone?**
 
 **Theme:** 3.2 — World Modeling (Personalized Tasks)
+
+**Live Environment:** https://huggingface.co/spaces/kanishk22/email-triage-openenv-env
+
+---
+
+## The Problem That Makes This Hard
+
+Same email. Three completely different correct answers:
+
+| Who you work for | Email: "Production is down, ₹8k/min revenue loss" | Correct Action |
+|-----------------|---------------------------------------------------|----------------|
+| Corporate VP | Escalate immediately | `escalate` |
+| Startup founder | Reply to affected clients first | `reply` |
+| C-suite executive | Delegate to on-call team | `delegate` |
+
+The agent never knows which world it's in. It must detect the shift purely from reward signals — when scores suddenly drop, figure out: *did I do something wrong, or did the rules just change under me?*
+
+**This is schema drift. It's what makes this environment genuinely hard — and genuinely novel.**
 
 ---
 
@@ -25,70 +37,113 @@ This environment tests whether an LLM can detect and adapt to **silently changin
 
 | Resource | Link |
 |----------|------|
-| Live Environment | https://huggingface.co/spaces/kanishk22/email-triage-openenv-env |
+| **Live Environment** | **https://huggingface.co/spaces/kanishk22/email-triage-openenv-env** |
 | **Interactive Demo (Gradio)** | **https://huggingface.co/spaces/kanishk22/email-triage-demo** |
-| Interactive API Docs | https://kanishk22-email-triage-openenv-env.hf.space/docs |
-| HF Jobs Training Script | [train.py](./train.py) |
-| Colab Training Notebook | https://colab.research.google.com/drive/1sqHn3AJB-PhwQ936fwWS7R4LSt_GPifC?usp=sharing |
+| **Colab Training Notebook** | **https://colab.research.google.com/drive/1sqHn3AJB-PhwQ936fwWS7R4LSt_GPifC?usp=sharing** |
+| Blog / Full Writeup | [blog.md](./blog.md) |
 | Demo Video | https://youtu.be/kFiR54vWTvo |
-| Blog / Writeup | [blog.md](./blog.md) |
 | WandB Training Logs | https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/xgiv7xo6 |
+| HF Jobs Training Script | [train.py](./train.py) |
+| Interactive API Docs | https://kanishk22-email-triage-openenv-env.hf.space/docs |
 | GitHub | https://github.com/cyborg-joshi/email-triage-openenv-env |
 
 ---
 
-## Results
+## Results — Training Actually Helped (+14%)
 
-### Training Progress — Reward Improved During Fine-Tuning
+### WandB Training Curves
 
-![train/rewards/reward_fn/mean — x: training step (0→4500), y: mean reward per batch](./wandb_reward_fn_mean.png)
+![train/rewards/reward_fn/mean — x: training step, y: mean reward per batch](./wandb_reward_fn_mean.png)
 
-*`train/rewards/reward_fn/mean` over 600 GRPO training steps. Reward trends upward from ~0.30 → ~0.40+. The environment's live reward function was the only training signal — no human labels, no reward model. [Full WandB run](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/xgiv7xo6)*
+*`train/rewards/reward_fn/mean` over 600 GRPO steps. Reward trends upward from ~0.30 → ~0.40+. No human labels. No reward model. The live environment IS the teacher. [Full WandB run →](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/xgiv7xo6)*
 
 ![train/reward — x: training step, y: reward](./wandb_train_reward.png)
 
-*`train/reward` over 600 steps — same upward trend confirming the learning signal was working throughout.*
+*`train/reward` — same upward trend across 600 steps confirming the learning signal worked throughout.*
 
-### Before vs After — Episode Rewards Across 3 Schema Phases
+### Before vs After Fine-Tuning
 
-![Before/After Fine-Tuning — x: episode (1→30), y: reward per episode](./before_after_finetuning.png)
+![Before/After Fine-Tuning — 3B base vs 3B GRPO fine-tuned across 30 episodes](./before_after_finetuning.png)
 
-*Episode-by-episode reward across all 3 schema phases. Red = Llama-3.2-3B base (no training). Green = GRPO fine-tuned Llama-3.2-3B. Reward drops at episodes 10 and 20 show schema drift kicking in — rules changed silently, both models take a hit.*
+*Red = Llama-3.2-3B with no training (avg 0.340). Green = same model after GRPO fine-tuning (avg 0.389). The drops at episodes 10 and 20 are schema drift — rules changed silently, both models take a hit before recovering.*
 
-### Key Result — GRPO Fine-Tuning Improves 3B Model by +14%
+### Per-Schema Improvement
 
-| Model | v1 Corporate | v2 Startup | v3 Executive | **Overall** | **vs 3B Base** |
-|-------|-------------|-----------|-------------|------------|----------------|
+| Model | v1 Corporate | v2 Startup | v3 Executive | **Overall** | **Improvement** |
+|-------|-------------|-----------|-------------|------------|-----------------|
 | Llama-3.2-3B (no training) | 0.301 | 0.303 | 0.415 | **0.340** | baseline |
 | Llama-3.2-3B + GRPO fine-tuned | 0.346 | 0.385 | 0.435 | **0.389** | **+14%** |
-| Llama-3.3-70B (no training, reference) | 0.41 | 0.58 | 0.50 | **0.496** | +46% |
+| Llama-3.3-70B (reference, no training) | 0.41 | 0.58 | 0.50 | **0.496** | — |
 
-*GRPO fine-tuning on the **same 3B model** improves overall reward by **+14%** (+15% v1, +27% v2, +5% v3). Trained purely from the live environment's reward signal — no human labels, no reward model. The fine-tuned 3B also achieves **78% of the 70B reference score at 1/23rd the model size.***
+**GRPO fine-tuning on the same 3B model improves reward by +14% overall.** v2 Startup saw the biggest gain (+27%) — the model learned that in startup mode, client emails need immediate replies, not delegation. Fine-tuned 3B achieves 78% of the 70B reference score at 1/23rd the model size.
 
 ---
 
 ## What Makes This Environment Unique
 
-### Schema Drift
-Every 10 episodes the environment silently switches its active rule schema:
+### 1. Schema Drift — The Core Innovation
 
-| Schema | Episodes | Priority | Tone | Max Reply |
-|--------|----------|----------|------|-----------|
+Every 10 episodes the environment **silently** switches its active rule schema:
+
+| Schema | Episodes | Top Priority | Tone | Word Limit |
+|--------|----------|-------------|------|-----------|
 | v1 Corporate | 1–10 | Production alerts | Formal | 50 words |
-| v2 Startup | 11–20 | Clients | Casual | 100 words |
+| v2 Startup | 11–20 | Client relationships | Casual | 100 words |
 | v3 Executive | 21+ | Legal / Revenue | Formal | 30 words |
 
-The agent is never told the rules changed. It must figure it out from the rewards.
+No prompt update. No announcement. The agent must detect the drift from reward signals alone. This is a proxy for **real-world distribution shift** — the silent degradation problem in deployed AI systems.
 
-### Two-Step Episodes
-Each episode has two steps — testing both decision-making and communication:
-- **Step 1:** Choose an action — `reply`, `escalate`, `delegate`, `reschedule`, `ignore`
-- **Step 2:** Write the actual reply (tone and length graded against current schema)
+### 2. The Hardest Scenario: `drift_detection`
 
-Reward is given only at the end of step 2 (delayed reward).
+One scenario puts the **exact same email** in front of the agent across all three schemas:
 
-### Rich World State
+| Schema | Correct Action | Score if wrong |
+|--------|---------------|----------------|
+| v1 Corporate | `ignore` (deep work block) | 0.05 |
+| v2 Startup | `reply` (clients are everything) | 0.05 |
+| v3 Executive | `delegate` (time too valuable) | 0.05 |
+
+A model that memorises one action **fails in two out of three schemas**. The only way to succeed is to genuinely detect which world you're in.
+
+### 3. Two-Step Episodes with Delayed Reward
+
+Each episode has two steps — testing both judgment and communication:
+- **Step 1:** Choose an action (`reply`, `escalate`, `delegate`, `reschedule`, `ignore`)
+- **Step 2:** Write the actual reply — graded on tone, keywords, and word limit
+
+Reward arrives only after Step 2. No feedback on the action alone. Just like real life.
+
+### 4. Self-Improvement Loop
+
+After each failed episode (reward < 0.35), the agent logs a lesson:
+```
+"task='spam_disguised' action='delegate' scored 0.18 — try a different action"
+```
+Up to 6 lessons accumulate and get injected into the system prompt at the start of each epoch. By epoch 3, the model is reading its own failure history before every prompt — building its own rulebook from mistakes.
+
+### 5. Anti-Reward-Hacking Built In
+
+The grader detects and penalises keyword stuffing — short replies that hit all keywords without saying anything coherent:
+
+```python
+is_stuffing = (raw_keyword_score >= 0.75 and (word_count < 6 or unique_ratio < 0.5))
+keyword_score = raw_keyword_score * (0.4 if is_stuffing else 1.0)
+```
+
+### 6. Fully Transparent Reward
+
+```
+Total Reward = action_correctness (40%) + reply_quality (40%) + conflict_awareness (20%)
+```
+
+The `/rubrics` endpoint shows exactly where the agent lost points after every episode. Not a black box.
+
+---
+
+## Rich World State
+
 The agent sees more than just an email:
+
 ```json
 {
   "emails": ["ALERT: Checkout service is down. Revenue $8k/min."],
@@ -100,59 +155,61 @@ The agent sees more than just an email:
 }
 ```
 
----
-
-## Reward Model
-
-```
-Total Reward = action_correctness (40%)
-             + reply_quality      (40%)
-             + conflict_awareness (20%)
-```
-
-- **Action correctness:** Did the agent pick the right action for the current schema? Partial credit for close actions.
-- **Reply quality:** Keyword coverage + tone compliance + length within schema limit
-- **Conflict awareness:** Did the reply acknowledge any scheduling conflict?
-
-All rewards clamped to `[0.01, 0.99]`.
+Good replies acknowledge the calendar conflict ("I'll be 20 min late to dinner") — tracked by the conflict awareness rubric.
 
 ---
 
-## Tasks (10 Scenarios)
+## Good vs Bad — What the Reward Looks Like
 
-| Task ID | Description | Schema Sensitive |
-|---------|-------------|-----------------|
+Same scenario: production down, dad's dinner in 2 hours. Schema v1 Corporate — escalate is correct, formal, 50 words max.
+
+| | Reply | Action Score | Reply Score | Conflict | **Total** |
+|--|-------|-------------|------------|---------|---------|
+| ❌ Bad | `"ok"` | 0.01 | 0.05 | 0.0 | **0.03** |
+| ✅ Good | `"Escalating now. Looping in on-call. Will be 20 min late to dinner."` | 1.0 | 0.84 | 1.0 | **0.74** |
+
+---
+
+## Training Pipeline
+
+GRPO fine-tuning via HuggingFace TRL + Unsloth:
+
+- **Base model:** `unsloth/Llama-3.2-3B-Instruct` (4-bit quantized via LoRA, r=16)
+- **Steps:** 600 training steps, 3 epochs, T4 GPU
+- **Training signal:** Live environment reward via HTTP — no human labels, no reward model
+- **Anti-collapse:** temperature=1.4, diversity bonus in reward, num_generations=8
+- **Self-improvement:** lesson injection between epochs
+
+[Run the Colab notebook yourself →](https://colab.research.google.com/drive/1sqHn3AJB-PhwQ936fwWS7R4LSt_GPifC?usp=sharing)
+
+---
+
+## 10 Scenarios
+
+| Task | Description | Schema Sensitive |
+|------|-------------|-----------------|
 | `conflict_work` | Production emergency vs personal dinner | Yes |
 | `conflict_calendar` | Double-booked appointments | Yes |
 | `boss_pressure` | Angry boss demanding overdue report | Yes |
 | `personal_event` | Friend's wedding with flight conflict | No |
 | `spam_disguised` | Phishing email disguised as urgent | Yes |
 | `legal_compliance` | Legal audit with strict deadline | Yes |
-| `personal_family` | Family emergency, emotional response needed | No |
+| `personal_family` | Family emergency, emotional response | No |
 | `client_urgent` | Enterprise client threatening CEO escalation | Yes |
 | `finance_pressure` | Overdue invoice needing delegation | No |
-| `drift_detection` | Ideal action changes across all schemas | Yes |
+| `drift_detection` | **Same email, three correct answers** | Yes |
 
 ---
 
-## Training Pipeline
+## Interactive Demo
 
-Fine-tuning uses **GRPO (Group Relative Policy Optimization)** from HuggingFace TRL + Unsloth:
+Try it yourself — no API knowledge needed:
 
-- Base model: `unsloth/Llama-3.2-3B-Instruct` (4-bit quantized via LoRA)
-- The environment's reward function IS the training signal — no human labels, no reward model
-- Training loop connects directly to the live HuggingFace Space via HTTP
-- 50 training episodes, 3 epochs, LoRA on q_proj + v_proj
+**[https://huggingface.co/spaces/kanishk22/email-triage-demo](https://huggingface.co/spaces/kanishk22/email-triage-demo)**
 
-See the [Colab training notebook](https://colab.research.google.com/drive/1sqHn3AJB-PhwQ936fwWS7R4LSt_GPifC?usp=sharing) to reproduce.
-
----
-
-## Why This Matters
-
-Most RL environments have fixed rules. Real-world tasks don't. A personal assistant deployed at a startup behaves differently than one deployed at a bank — and both behave differently from one working for an executive who switched industries last month.
-
-Schema drift is a proxy for **distribution shift in deployed AI systems** — the thing that causes production models to silently degrade. This environment forces the agent to detect and adapt, which is closer to the real problem than any static benchmark.
+1. Pick a scenario → click **Good Example** or **Bad Example**
+2. Hit **Submit & Score** — see total reward + per-rubric breakdown
+3. Click **▶ Run Drift Detection Demo** — same email, three schemas, three correct answers
 
 ---
 
@@ -164,60 +221,30 @@ Schema drift is a proxy for **distribution shift in deployed AI systems** — th
 | `POST` | `/reset?task=<id>` | Start new episode |
 | `POST` | `/step` | Send action or reply |
 | `GET` | `/state` | Current episode state |
-| `GET` | `/rubrics` | Per-component reward breakdown (action / reply / conflict) |
+| `GET` | `/rubrics` | Per-component reward breakdown |
 | `GET` | `/schema` | Active schema + drift schedule |
-| `POST` | `/admin/reset_env` | Reset episode counter to 0 (back to v1) |
-| `GET` | `/docs` | Interactive API documentation |
-
-### Example: Full Episode
+| `POST` | `/admin/reset_env` | Reset episode counter to 0 |
+| `GET` | `/docs` | Interactive API docs |
 
 ```bash
-# Reset
+# Full episode example
 curl -X POST "https://kanishk22-email-triage-openenv-env.hf.space/reset?task=conflict_work"
-
-# Step 1 — send action
 curl -X POST "https://kanishk22-email-triage-openenv-env.hf.space/step" \
   -H "Content-Type: application/json" \
   -d '{"action": "escalate", "reply": "", "step": 1}'
-
-# Step 2 — send reply, receive reward
 curl -X POST "https://kanishk22-email-triage-openenv-env.hf.space/step" \
   -H "Content-Type: application/json" \
-  -d '{"action": "escalate", "reply": "On it. Looping in the on-call team. Will be 20 min late to dinner.", "step": 2}'
+  -d '{"action": "escalate", "reply": "On it. Looping in on-call. 20 min late to dinner.", "step": 2}'
 ```
 
 ---
 
-## Project Structure
+## What's Next
 
-```
-email-triage-openenv/
-├── env/
-│   ├── environment.py   — ExecutiveAssistantEnv (reset, step, schema drift)
-│   ├── graders.py       — compute_reward (action + reply + conflict)
-│   ├── models.py        — WorldState, ExecutiveAction, ExecutiveObservation
-│   └── scenarios.py     — All 10 email scenarios + 3 schema definitions
-├── server/
-│   └── app.py           — FastAPI server (7 endpoints + singleton env)
-├── before_after_finetuning.png  — Reward curves (base vs fine-tuned)
-├── inference.py         — Agent script (calls environment via HTTP)
-├── openenv.yaml         — OpenEnv manifest
-├── Dockerfile           — Container config for HuggingFace Spaces
-└── requirements.txt     — Dependencies
-```
-
----
-
-## Interactive Demo
-
-Try the environment yourself — no API knowledge needed:
-
-**[https://huggingface.co/spaces/kanishk22/email-triage-demo](https://huggingface.co/spaces/kanishk22/email-triage-demo)**
-
-1. Pick a scenario (e.g. `conflict_work`)
-2. Click **Good Example** or **Bad Example** to pre-fill action + reply
-3. Hit **Submit & Score** — see reward + rubric breakdown instantly
-4. Switch scenarios to explore schema drift across Corporate / Startup / Executive modes
+1. **Blind schema mode** — remove `schema_version` from world state entirely; agent gets zero hints
+2. **LLM-as-judge** for reply quality — more robust than keyword matching
+3. **Performance-based curriculum** — advance to next schema only when agent hits 0.65 avg reward
+4. **More compute** — 600 steps on T4 was the hackathon limit; longer runs would push +14% further
 
 ---
 
@@ -226,7 +253,7 @@ Try the environment yourself — no API knowledge needed:
 ```bash
 pip install -r requirements.txt
 uvicorn server.app:app --host 0.0.0.0 --port 8000
-# Open http://localhost:8000/docs to test all endpoints
+# Open http://localhost:8000/docs
 ```
 
 ---
@@ -234,13 +261,10 @@ uvicorn server.app:app --host 0.0.0.0 --port 8000
 ## Built With
 
 - [OpenEnv](https://github.com/huggingface/openenv) — RL environment framework
-- [FastAPI](https://fastapi.tiangolo.com) — API server
-- [Pydantic](https://docs.pydantic.dev) — Data validation
-- [TRL](https://github.com/huggingface/trl) + [Unsloth](https://github.com/unslothai/unsloth) — Fine-tuning
-- [Llama-3.3-70B](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct) — Agent LLM
+- [FastAPI](https://fastapi.tiangolo.com) + [Pydantic](https://docs.pydantic.dev) — API server
+- [TRL](https://github.com/huggingface/trl) + [Unsloth](https://github.com/unslothai/unsloth) — GRPO fine-tuning
 - [HuggingFace Spaces](https://huggingface.co/spaces) — Deployment
 
 ---
 
 **Author:** kanishk22 | Meta PyTorch OpenEnv × Scaler Hackathon Grand Finale 2026
-
