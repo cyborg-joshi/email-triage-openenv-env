@@ -2,6 +2,10 @@
 
 *Built at the Meta PyTorch OpenEnv × Scaler Hackathon Grand Finale, April 25–26 2026*
 
+> **TL;DR:** I built an RL environment where the rules change silently every 10 episodes. Then trained Llama-3.2-3B on it using GRPO — improving the model by **+14%** over its untrained baseline. The model also built its own rulebook from mistakes via a self-improvement loop.
+
+**Links:** [Live Demo](https://huggingface.co/spaces/kanishk22/email-triage-demo) · [HF Environment](https://huggingface.co/spaces/kanishk22/email-triage-openenv-env) · [Colab Training](https://colab.research.google.com/drive/1sqHn3AJB-PhwQ936fwWS7R4LSt_GPifC?usp=sharing) · [WandB Logs](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/xgiv7xo6) · [Video](https://youtu.be/kFiR54vWTvo)
+
 ---
 
 Imagine you start a new job. Nobody gives you a rulebook. You figure out what matters — what gets praise, what gets ignored — purely from how people react to what you do.
@@ -178,13 +182,17 @@ By epoch 3, the model had accumulated 6 lessons and was reading them at every pr
 
 ### What the Training Curves Show
 
+![Training Loss + Reward Curves](./training_curves_v5.png)
+
+*Left: training loss decreasing toward 0. Right: reward trending upward, crossing the 3B base (0.340) red dashed line. Real data pulled from WandB run xgiv7xo6.*
+
 ![train/rewards/reward_fn/mean](./wandb_reward_fn_mean.png)
 
-*`train/rewards/reward_fn/mean` over 500 steps — trending upward from ~0.28 to ~0.42+. The noisy curve is expected in GRPO — you're sampling multiple completions per prompt and ranking them, not doing supervised regression.*
+*`train/rewards/reward_fn/mean` over 600 steps — trending upward from ~0.30 to ~0.40+. Noisy curve is expected in GRPO — you're sampling multiple completions per prompt and ranking them.*
 
 ![train/reward](./wandb_train_reward.png)
 
-*`train/reward` over 500 steps — same upward trend, confirming the signal was working throughout.*
+*`train/reward` over 600 steps — same upward trend confirming the signal was working throughout.*
 
 The reward trends upward. The signal was working. The model was learning — which makes what happened next more interesting.
 
