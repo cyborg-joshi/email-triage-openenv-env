@@ -150,10 +150,31 @@ I fine-tuned using **GRPO (Group Relative Policy Optimization)** from HuggingFac
 
 - **Base model:** Llama-3.2-3B-Instruct (4-bit quantized via LoRA, r=16)
 - **Hardware:** Google Colab T4 GPU
-- **Steps:** 500 training steps, 5 epochs
+- **Steps:** 600 training steps, 3 epochs
 - **Training signal:** The live environment's reward function — no human labels, no separate reward model
+- **Self-improvement loop:** After each failed episode (reward < 0.35), the agent logs a lesson — e.g. *"task='spam_disguised' action='delegate' scored 0.18 — try a different action"*. Up to 6 lessons accumulate and get injected into the system prompt at the start of each epoch. The model builds its own rulebook from mistakes.
 
 The training loop calls `POST /reset` and `POST /step` on the deployed HuggingFace Space via HTTP for every reward. Real network calls. Real grading. The environment IS the teacher.
+
+Here's the self-improvement code from `train.py`:
+
+```python
+LESSONS = []
+
+# After each episode:
+if r < 0.35 and len(LESSONS) < 6:
+    lesson = f"task='{task}' action='{action}' scored {r:.2f} — try a different action"
+    LESSONS.append(lesson)
+
+# Injected into the next epoch's prompts:
+def build_system_prompt():
+    if not LESSONS:
+        return BASE_PROMPT
+    lesson_block = "\n\nLessons learned:\n" + "\n".join(f"- {l}" for l in LESSONS)
+    return BASE_PROMPT + lesson_block
+```
+
+By epoch 3, the model had accumulated 6 lessons and was reading them at every prompt — like a new hire who wrote down what went wrong on day one and checked their notes before every email.
 
 ### What the Training Curves Show
 
@@ -219,11 +240,10 @@ There's also a **Schema Drift Challenge** — it runs the same `drift_detection`
 
 ## What's Next
 
-1. **Entropy bonus** in GRPO loss — forces the model to explore all 5 actions instead of collapsing to one safe choice
-2. **LLM-as-judge** for reply quality — more robust than keyword matching, though it adds training-time latency
-3. **Blind schema mode** — remove `schema_version` from world state entirely, so the agent gets zero hints about which rules are active
-4. **Performance-based curriculum** — advance to the next schema only when the agent hits 0.65 average reward, not on a fixed episode count
-5. **Self-improvement loop** — after each wrong episode, the agent generates a lesson ("In v1 Corporate, production alerts require escalation"). That lesson gets added to its context for future episodes. Over 30 episodes it builds its own rulebook from mistakes.
+1. **LLM-as-judge** for reply quality — more robust than keyword matching, though it adds training-time latency
+2. **Blind schema mode** — remove `schema_version` from world state entirely, so the agent gets zero hints about which rules are active
+3. **Performance-based curriculum** — advance to the next schema only when the agent hits 0.65 average reward, not on a fixed episode count
+4. **More training compute** — 600 steps on a T4 was the limit; longer runs would push the +14% further
 
 ---
 
