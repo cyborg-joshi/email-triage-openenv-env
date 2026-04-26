@@ -257,7 +257,7 @@ There's also a **Schema Drift Challenge** — it runs the same `drift_detection`
 | Training Notebook | [Colab](https://colab.research.google.com/drive/1sqHn3AJB-PhwQ936fwWS7R4LSt_GPifC?usp=sharing) |
 | Training Logs | [WandB](https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/xgiv7xo6) |
 | Source Code | [GitHub](https://github.com/cyborg-joshi/email-triage-openenv-env) |
-| Demo Video | [YouTube](https://youtu.be/sfG-9tPbusc) |
+| Demo Video | [YouTube](https://youtu.be/kFiR54vWTvo) |
 
 ---
 

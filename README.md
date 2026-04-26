@@ -30,7 +30,7 @@ This environment tests whether an LLM can detect and adapt to **silently changin
 | Interactive API Docs | https://kanishk22-email-triage-openenv-env.hf.space/docs |
 | HF Jobs Training Script | [train.py](./train.py) |
 | Colab Training Notebook | https://colab.research.google.com/drive/1sqHn3AJB-PhwQ936fwWS7R4LSt_GPifC?usp=sharing |
-| Demo Video | https://youtu.be/sfG-9tPbusc |
+| Demo Video | https://youtu.be/kFiR54vWTvo |
 | Blog / Writeup | [blog.md](./blog.md) |
 | WandB Training Logs | https://wandb.ai/kanishkjoshi22-cisco/email-triage-schema-drift/runs/xgiv7xo6 |
 | GitHub | https://github.com/cyborg-joshi/email-triage-openenv-env |
